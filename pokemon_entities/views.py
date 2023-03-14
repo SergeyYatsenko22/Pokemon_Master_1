@@ -4,6 +4,7 @@ from pokemon_entities.models import Pokemon, PokemonEntity
 from django.utils import timezone
 
 MOSCOW_CENTER = [55.751244, 37.618423]
+
 DEFAULT_IMAGE_URL = (
     'https://vignette.wikia.nocookie.net/pokemon/images/6/6e/%21.png/revision'
     '/latest/fixed-aspect-ratio-down/width/240/height/240?cb=20130525215832'
@@ -23,14 +24,16 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
         icon=icon,
     ).add_to(folium_map)
 
+time=timezone.localtime()
 
 def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
-    for pokemon_entity in PokemonEntity.objects.filter(appeared_at__lt=timezone.localtime(),
-                                                       disappeared_at__gt=timezone.localtime()):
+    for pokemon_entity in PokemonEntity.objects.filter(appeared_at__lt=time,
+                                                       disappeared_at__gt=time):
         add_pokemon(
-            folium_map, pokemon_entity.lat,
+            folium_map,
+            pokemon_entity.lat,
             pokemon_entity.lon,
             request.build_absolute_uri(pokemon_entity.pokemon.image.url)
         )
@@ -66,18 +69,17 @@ def show_pokemon(request, pokemon_id):
             "img_url": pokemon.previous_evolution.image.url
         }
 
-    for next_pokemon in pokemon.next_evolutions.all():
         pokemons["next_evolution"] = {
-            "title_ru": next_pokemon.title,
-            "pokemon_id": next_pokemon.id,
-            "img_url": next_pokemon.image.url
+            "title_ru": pokemon.title,
+            "pokemon_id": pokemon.id,
+            "img_url": pokemon.image.url
         }
 
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
     for pokemon_entity in PokemonEntity.objects.filter(pokemon__title=pokemon.title,
-                                                       appeared_at__lt=timezone.localtime(),
-                                                       disappeared_at__gt=timezone.localtime()):
+                                                       appeared_at__lt=time,
+                                                       disappeared_at__gt=time):
         add_pokemon(
             folium_map, pokemon_entity.lat,
             pokemon_entity.lon,
