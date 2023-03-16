@@ -24,6 +24,12 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
         icon=icon,
     ).add_to(folium_map)
 
+def find_image(id):
+    pokemon = Pokemon.objects.get(id=id)
+    if pokemon.image:
+        return pokemon.image.url
+    else:
+        return DEFAULT_IMAGE_URL
 
 def show_all_pokemons(request):
     time = timezone.localtime()
@@ -42,7 +48,7 @@ def show_all_pokemons(request):
     for pokemon in Pokemon.objects.all():
         pokemons_on_page.append({
             'pokemon_id': pokemon.id,
-            'img_url': pokemon.image.url,
+            'img_url': find_image(pokemon.id),
             'title_ru': pokemon.title,
         })
 
